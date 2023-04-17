@@ -1,6 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 part 'data_model.g.dart';
-
+// its model class
 @HiveType(typeId: 1)
 class StudentModel extends HiveObject {
   @HiveField(0)

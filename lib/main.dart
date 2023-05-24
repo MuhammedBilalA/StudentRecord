@@ -1,8 +1,7 @@
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:project_02/Screens/home_screen.dart';
-import 'package:project_02/Screens/person_add.dart';
 import 'package:project_02/db/model/data_model.dart';
 
 Future<void> main(List<String> args) async {
@@ -24,7 +23,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'MyApp',
       theme: ThemeData(primarySwatch: Colors.green),
-      home: HomeScreen(),
+      home:const HomeScreen(),
     );
   }
+
 }

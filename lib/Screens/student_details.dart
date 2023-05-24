@@ -182,14 +182,16 @@ class StudentDetails extends StatelessWidget {
                     }),
                     icon: const Icon(Icons.arrow_circle_left),
                     label: const Text('Back')),
-                SizedBox(
+                const SizedBox(
                   width: 15,
                 ),
                 ElevatedButton.icon(
                     onPressed: (() {
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (ctx) => EditProfile(
-                              index: passId, passValueProfile: passValue)));
+                            imagePath: passValue.image,
+
+                               passValueProfile: passValue)));
                     }),
                     icon: const Icon(Icons.edit),
                     label: const Text('Edit   ')),

@@ -1,73 +1,224 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:project_02/Screens/editing_screen.dart';
 import 'package:project_02/Screens/student_details.dart';
+import 'package:project_02/db/functions/db_functions.dart';
 import 'package:project_02/db/model/data_model.dart';
 
-class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+TextEditingController searchControllorNew = TextEditingController();
+ValueNotifier<List<StudentModel>> searchNotifier = ValueNotifier([]);
+
+class SearchScreen extends StatelessWidget {
+  const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
-}
-
-class _SearchScreenState extends State<SearchScreen> {
-  final _searchController = TextEditingController();
-
-  List<StudentModel> studentList =
-      Hive.box<StudentModel>('student_db').values.toList();
-  late List<StudentModel> studentDisplay = List<StudentModel>.from(studentList);
-
-  Widget expanded() {
-    return Expanded(
-      child: studentDisplay.isNotEmpty
-          ? ListView.builder(
-              itemCount: studentDisplay.length,
-              itemBuilder: (context, index) {
-                File img = File(studentDisplay[index].image);
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: FileImage(img),
-                    radius: 22,
-                  ),
-                  title: Text(studentDisplay[index].name),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => StudentDetails(
-                                passValue: studentDisplay[index],
-                                passId: index)));
-                  },
-                );
-              },
-            )
-          : const Center(
-              child: Text(
-                'No Match Found',
-                style: TextStyle(fontSize: 20),
-                textAlign: TextAlign.center,
-              ),
-            ),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: ValueListenableBuilder(
+          valueListenable: searchNotifier,
+          builder: (context, value, child) => Column(
+            children: [
+              searchTextformFieldFunction(context),
+              Expanded(
+                child: searchControllorNew.text.isEmpty ||
+                        searchControllorNew.text.trim().isEmpty
+                    ? searchFunction(context)
+                    : searchNotifier.value.isEmpty
+                        ? searchEmpty()
+                        : searchFound(context),
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget searchTextField() {
+  search(String searchtext) {
+    searchNotifier.value = studentListNotifier.value
+        .where((element) => element.name
+            .toLowerCase()
+            .contains(searchtext.toLowerCase().trim()))
+        .toList();
+  }
+
+  Widget searchEmpty() {
+    return const SizedBox(
+      child: Center(
+        child: Text(
+          'Name Not Found',
+          style: TextStyle(
+            fontSize: 25,
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  ListView searchFunction(BuildContext context) {
+    return ListView.separated(
+        itemBuilder: ((ctx, index) {
+          // final data = studentListNotifier.value[index];
+          // data.key;
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListTile(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              contentPadding: const EdgeInsets.all(15),
+              tileColor: const Color.fromARGB(255, 168, 234, 132),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => StudentDetails(
+                            passValue: studentListNotifier.value[index],
+                            passId: index)));
+              },
+              title: Text(
+                studentListNotifier.value[index].name,
+              ),
+              // subtitle: Text(data.age),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                      onPressed: (() {
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (ctx) {
+                          return EditProfile(
+                            imagePath: studentListNotifier.value[index].image,
+                            passValueProfile: studentListNotifier.value[index],
+                          );
+                        }));
+                      }),
+                      icon: const Icon(Icons.edit)),
+                  IconButton(
+                      onPressed: ((() {
+                        deleteAlert(context, studentListNotifier.value[index]);
+                      })),
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      )),
+                ],
+              ),
+              leading: GestureDetector(
+                onTap: () {
+                  showprofile(context, studentListNotifier.value[index]);
+                },
+                child: CircleAvatar(
+                  backgroundImage: studentListNotifier.value[index].image == 'x'
+                      ? const AssetImage('assets/pp3.jpg') as ImageProvider
+                      : FileImage(File(studentListNotifier.value[index].image)),
+                  backgroundColor: Colors.green,
+                  radius: 33,
+                ),
+              ),
+            ),
+          );
+        }),
+        separatorBuilder: ((context, index) {
+          return const SizedBox(
+            height: 0,
+          );
+        }),
+        itemCount: studentListNotifier.value.length);
+  }
+
+  ListView searchFound(BuildContext context) {
+    return ListView.separated(
+        itemBuilder: ((ctx, index) {
+          // final data = studentListNotifier.value[index];
+          // data.key;
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListTile(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              contentPadding: const EdgeInsets.all(15),
+              tileColor: const Color.fromARGB(255, 168, 234, 132),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => StudentDetails(
+                            passValue: searchNotifier.value[index],
+                            passId: index)));
+              },
+              title: Text(
+                searchNotifier.value[index].name,
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                      onPressed: (() {
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (ctx) {
+                          return EditProfile(
+                            imagePath: searchNotifier.value[index].image,
+                            passValueProfile: searchNotifier.value[index],
+                          );
+                        }));
+                      }),
+                      icon: const Icon(Icons.edit)),
+                  IconButton(
+                      onPressed: ((() {
+                        deleteAlert(context, searchNotifier.value[index]);
+                        searchNotifier.notifyListeners();
+                        studentListNotifier.notifyListeners();
+                      })),
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      )),
+                ],
+              ),
+              leading: GestureDetector(
+                onTap: () {
+                  showprofile(context, searchNotifier.value[index]);
+                },
+                child: CircleAvatar(
+                  backgroundImage: searchNotifier.value[index].image == 'x'
+                      ? const AssetImage('assets/pp3.jpg') as ImageProvider
+                      : FileImage(File(searchNotifier.value[index].image)),
+                  backgroundColor: Colors.green,
+                  radius: 33,
+                ),
+              ),
+            ),
+          );
+        }),
+        separatorBuilder: ((context, index) {
+          return const SizedBox(
+            height: 0,
+          );
+        }),
+        itemCount: searchNotifier.value.length);
+  }
+
+  TextFormField searchTextformFieldFunction(BuildContext context) {
     return TextFormField(
       autofocus: true,
-      controller: _searchController,
+      controller: searchControllorNew,
       cursorColor: Colors.black,
       decoration: InputDecoration(
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.search,
             color: Colors.white,
           ),
           suffixIcon: IconButton(
-            onPressed: () => clearText(),
-            icon: Icon(
+            onPressed: () {
+              clearText(context);
+            },
+            icon: const Icon(
               Icons.clear,
               color: Colors.white,
             ),
@@ -79,41 +230,70 @@ class _SearchScreenState extends State<SearchScreen> {
               borderRadius: BorderRadius.circular(30)),
           hintText: 'Search'),
       onChanged: (value) {
-        _searchStudent(value);
+        search(value);
+        searchNotifier.notifyListeners();
       },
     );
   }
 
-  void _searchStudent(String value) {
-    setState(() {
-      studentDisplay = studentList
-          .where((element) => element.name.contains(value.trim()))
-          .toList();
-    });
-  }
-
-  void clearText() {
-    if (_searchController.text.isNotEmpty) {
-      _searchController.clear();
+  void clearText(context) {
+    if (searchControllorNew.text.isNotEmpty) {
+      searchControllorNew.clear();
+      searchNotifier.notifyListeners();
     } else {
       Navigator.of(context).pop();
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.green[50],
-      body: SafeArea(
-          child: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          children: <Widget>[
-            searchTextField(),
-            expanded(),
-          ],
-        ),
-      )),
-    );
+  deleteAlert(BuildContext context, StudentModel studentModel) {
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              content: const Text('Are you sure you want to delete'),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      deleteStudent(studentModel);
+                      searchNotifier.notifyListeners();
+                      studentListNotifier.notifyListeners();
+                      searchNotifier.value.remove(studentModel);
+                      Navigator.of(context).pop(ctx);
+                    },
+                    child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(ctx);
+                      searchNotifier.notifyListeners();
+                    },
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.black),
+                    ))
+              ],
+            ));
+  }
+
+  showprofile(BuildContext context, StudentModel data) {
+    showDialog(
+        context: context,
+        builder: ((ctx) {
+          return AlertDialog(
+            content: Container(
+              height: 300,
+              width: 300,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: data.image == 'x'
+                      ? const AssetImage('assets/pp3.jpg') as ImageProvider
+                      : FileImage(
+                          File(data.image),
+                        ),
+                ),
+              ),
+            ),
+            
+          );
+        }));
   }
 }

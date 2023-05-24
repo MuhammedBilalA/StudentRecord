@@ -1,10 +1,6 @@
-// ignore_for_file: prefer_const_constructors
 
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:project_02/db/functions/db_functions.dart';
 import 'package:project_02/db/model/data_model.dart';
@@ -46,11 +42,11 @@ class _PersonAddState extends State<PersonAdd> {
   }
 
   Future<void> takePhoto() async {
-    final PickedFile =
+    final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (PickedFile != null) {
+    if (pickedFile != null) {
       setState(() {
-        imagePath = PickedFile.path;
+        imagePath = pickedFile.path;
       });
     }
   }
@@ -59,7 +55,7 @@ class _PersonAddState extends State<PersonAdd> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Student'),
+        title: const Text('Add Student'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -67,20 +63,20 @@ class _PersonAddState extends State<PersonAdd> {
             const SizedBox(
               height: 80,
             ),
-            Container(
+            SizedBox(
               width: double.infinity,
               child: CircleAvatar(
                 radius: 80,
                 child: CircleAvatar(
                   radius: 80,
                   backgroundImage: imagePath == 'x'
-                      ? AssetImage('assets/pp3.jpg') as ImageProvider
+                      ? const AssetImage('assets/pp3.jpg') as ImageProvider
                       : FileImage(File(imagePath)),
                   child: IconButton(
                       onPressed: () {
                         takePhoto();
                       },
-                      icon: Icon(Icons.add_a_photo_outlined, size: 50)),
+                      icon: const Icon(Icons.add_a_photo_outlined, size: 50)),
                 ),
               ),
             ),
@@ -96,21 +92,22 @@ class _PersonAddState extends State<PersonAdd> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          fillColor: Color.fromARGB(255, 234, 247, 239),
+                          fillColor: const Color.fromARGB(255, 234, 247, 239),
                           filled: true,
                           counterText: "",
-                          prefixIcon: Icon(Icons.person),
-                          label: Text('Name'),
-                          border: OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.person),
+                          label: const Text('Name'),
+                          border: const OutlineInputBorder(),
                           helperText: '',
                           hintText: 'Enter Your Name'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'please enter a valid username';
                         }
+                        return null;
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     TextFormField(
@@ -121,21 +118,22 @@ class _PersonAddState extends State<PersonAdd> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          fillColor: Color.fromARGB(255, 234, 247, 239),
+                          fillColor: const Color.fromARGB(255, 234, 247, 239),
                           filled: true,
                           counterText: "",
-                          prefixIcon: Icon(Icons.calendar_month_outlined),
-                          label: Text('Age'),
-                          border: OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.calendar_month_outlined),
+                          label: const Text('Age'),
+                          border: const OutlineInputBorder(),
                           helperText: '',
                           hintText: 'Enter Your Age'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'please enter Your Age';
                         }
+                        return null;
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     TextFormField(
@@ -146,21 +144,22 @@ class _PersonAddState extends State<PersonAdd> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          fillColor: Color.fromARGB(255, 234, 247, 239),
+                          fillColor: const Color.fromARGB(255, 234, 247, 239),
                           filled: true,
                           counterText: "",
-                          prefixIcon: Icon(Icons.phone),
-                          label: Text('PhoneNumber'),
-                          border: OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.phone),
+                          label: const Text('PhoneNumber'),
+                          border: const OutlineInputBorder(),
                           helperText: '',
                           hintText: 'Enter Your PhoneNumber'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'please enter your number';
                         }
+                        return null;
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     TextFormField(
@@ -169,21 +168,22 @@ class _PersonAddState extends State<PersonAdd> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          fillColor: Color.fromARGB(255, 234, 247, 239),
+                          fillColor: const Color.fromARGB(255, 234, 247, 239),
                           filled: true,
                           counterText: "",
-                          prefixIcon: Icon(Icons.email_outlined),
-                          label: Text('email'),
-                          border: OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          label: const Text('email'),
+                          border: const OutlineInputBorder(),
                           helperText: '',
                           hintText: 'Enter Your Email'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'please enter Your email';
                         }
+                        return null;
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Padding(
@@ -197,9 +197,9 @@ class _PersonAddState extends State<PersonAdd> {
                                 onPressed: (() {
                                   Navigator.of(context).pop();
                                 }),
-                                child: Text('Cancel')),
+                                child: const Text('Cancel')),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 50,
                           ),
                           SizedBox(
@@ -212,7 +212,7 @@ class _PersonAddState extends State<PersonAdd> {
                                   Navigator.of(context).pop();
                                 } else {}
                               }),
-                              child: Text('Save'),
+                              child: const Text('Save'),
                             ),
                           ),
                         ],

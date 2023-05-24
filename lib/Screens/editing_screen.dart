@@ -1,10 +1,7 @@
-// ignore_for_file: prefer_const_constructors, non_constant_identifier_names, no_leading_underscores_for_local_identifiers
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
+
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:project_02/Screens/home_screen.dart';
@@ -12,11 +9,12 @@ import 'package:project_02/db/functions/db_functions.dart';
 import 'package:project_02/db/model/data_model.dart';
 
 class EditProfile extends StatefulWidget {
-  EditProfile({Key? key, required this.index, required this.passValueProfile})
+  EditProfile(
+      {Key? key, required this.passValueProfile, required this.imagePath})
       : super(key: key);
 
   StudentModel passValueProfile;
-  int index;
+  String imagePath;
 
   @override
   State<EditProfile> createState() => _EditProfileState();
@@ -33,28 +31,33 @@ class _EditProfileState extends State<EditProfile> {
   late final _emailControllor =
       TextEditingController(text: widget.passValueProfile.email);
 
-  String imagePath = '';
+  Future<void> studentAddBTN() async {
+    final name = _nameControllor.text.trim();
+    final age = _ageControllor.text.trim();
+    final num = _numberControllor.text.trim();
+    final email = _emailControllor.text.trim();
 
-  Future<void> StudentAddBtn(int index) async {
-    final _name = _nameControllor.text.trim();
-    final _age = _ageControllor.text.trim();
-    final _num = _numberControllor.text.trim();
-    final _email = _emailControllor.text.trim();
-
-    if (_name.isEmpty || _age.isEmpty || _num.isEmpty || _email.isEmpty) {
+    if (name.isEmpty || age.isEmpty || num.isEmpty || email.isEmpty) {
       return;
     }
 
-    final _student = StudentModel(
-      name: _name,
-      age: _age,
-      phone: _num,
-      email: _email,
-      image: imagePath,
+    final student = StudentModel(
+      name: name,
+      age: age,
+      phone: num,
+      email: email,
+      image: widget.imagePath,
     );
 
     final studentDB = await Hive.openBox<StudentModel>('student_db');
-    studentDB.putAt(index, _student);
+    int? newKey;
+    for (var element in studentDB.values) {
+      if (widget.passValueProfile == element) {
+        newKey = element.key;
+      }
+    }
+    studentDB.put(newKey, student);
+
     getAllStudent();
   }
 
@@ -62,8 +65,10 @@ class _EditProfileState extends State<EditProfile> {
     final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      imagePath = pickedFile.path;
-      widget.passValueProfile.image = imagePath;
+      widget.imagePath = pickedFile.path;
+      print(
+          '------------------------------------------------------------------------$widget.imagePath');
+      // widget.passValueProfile.image = widget.imagePath;
     }
     setState(() {});
   }
@@ -72,7 +77,7 @@ class _EditProfileState extends State<EditProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Student'),
+        title: const Text('Add Student'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -86,12 +91,15 @@ class _EditProfileState extends State<EditProfile> {
                 radius: 80,
                 child: CircleAvatar(
                   radius: 80,
-                  backgroundImage: backImage(),
+                  backgroundImage: (widget.imagePath == 'x')
+                      ? const AssetImage('assets/pp3.jpg')
+                          as ImageProvider<Object>
+                      : FileImage(File(widget.imagePath)),
                   child: IconButton(
                       onPressed: () {
                         takePhoto();
                       },
-                      icon: Icon(Icons.add_a_photo_outlined, size: 50)),
+                      icon: const Icon(Icons.add_a_photo_outlined, size: 50)),
                 ),
               ),
             ),
@@ -107,21 +115,22 @@ class _EditProfileState extends State<EditProfile> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          fillColor: Color.fromARGB(255, 234, 247, 239),
+                          fillColor: const Color.fromARGB(255, 234, 247, 239),
                           filled: true,
                           counterText: "",
-                          prefixIcon: Icon(Icons.person),
-                          label: Text('Name'),
-                          border: OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.person),
+                          label: const Text('Name'),
+                          border: const OutlineInputBorder(),
                           helperText: '',
                           hintText: 'Enter Your Name'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'please enter a valid username';
                         }
+                        return null;
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     TextFormField(
@@ -132,21 +141,22 @@ class _EditProfileState extends State<EditProfile> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          fillColor: Color.fromARGB(255, 234, 247, 239),
+                          fillColor: const Color.fromARGB(255, 234, 247, 239),
                           filled: true,
                           counterText: "",
-                          prefixIcon: Icon(Icons.calendar_month_outlined),
-                          label: Text('Age'),
-                          border: OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.calendar_month_outlined),
+                          label: const Text('Age'),
+                          border: const OutlineInputBorder(),
                           helperText: '',
                           hintText: 'Enter Your Age'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'please enter Your Age';
                         }
+                        return null;
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     TextFormField(
@@ -157,21 +167,22 @@ class _EditProfileState extends State<EditProfile> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          fillColor: Color.fromARGB(255, 234, 247, 239),
+                          fillColor: const Color.fromARGB(255, 234, 247, 239),
                           filled: true,
                           counterText: "",
-                          prefixIcon: Icon(Icons.phone),
-                          label: Text('PhoneNumber'),
-                          border: OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.phone),
+                          label: const Text('PhoneNumber'),
+                          border: const OutlineInputBorder(),
                           helperText: '',
                           hintText: 'Enter Your PhoneNumber'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'please enter your number';
                         }
+                        return null;
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     TextFormField(
@@ -180,21 +191,22 @@ class _EditProfileState extends State<EditProfile> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          fillColor: Color.fromARGB(255, 234, 247, 239),
+                          fillColor: const Color.fromARGB(255, 234, 247, 239),
                           filled: true,
                           counterText: "",
-                          prefixIcon: Icon(Icons.email_outlined),
-                          label: Text('email'),
-                          border: OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          label: const Text('email'),
+                          border: const OutlineInputBorder(),
                           helperText: '',
                           hintText: 'Enter Your Email'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'please enter Your email';
                         }
+                        return null;
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Padding(
@@ -208,9 +220,9 @@ class _EditProfileState extends State<EditProfile> {
                                 onPressed: (() {
                                   Navigator.of(context).pop();
                                 }),
-                                child: Text('Cancel')),
+                                child: const Text('Cancel')),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 50,
                           ),
                           SizedBox(
@@ -219,14 +231,14 @@ class _EditProfileState extends State<EditProfile> {
                             child: ElevatedButton(
                               onPressed: (() {
                                 if (formkey.currentState!.validate()) {
-                                  StudentAddBtn(widget.index);
+                                  studentAddBTN();
                                   Navigator.of(context).pushAndRemoveUntil(
                                       MaterialPageRoute(
-                                          builder: (ctx) => HomeScreen()),
+                                          builder: (ctx) => const HomeScreen()),
                                       (route) => false);
                                 } else {}
                               }),
-                              child: Text('Update'),
+                              child: const Text('Update'),
                             ),
                           ),
                         ],
@@ -242,11 +254,4 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
-  backImage() {
-    if (imagePath == '' && widget.passValueProfile.image == 'x') {
-      return AssetImage('assets/pp3.jpg');
-    } else {
-      return FileImage(File(widget.passValueProfile.image));
-    }
-  }
 }

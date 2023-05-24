@@ -13,7 +13,10 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    getAllStudent();
+    // getAllStudent();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await getAllStudent();
+    });
     return Scaffold(
       appBar: AppBar(
         title: const Text('Student List'),
@@ -21,13 +24,12 @@ class HomeScreen extends StatelessWidget {
           IconButton(
               onPressed: (() {
                 Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => SearchScreen()));
+                    MaterialPageRoute(builder: (context) => const SearchScreen()));
               }),
-              icon: Icon(
+              icon: const Icon(
                 Icons.search,
               ))
         ],
-        
       ),
       body: ValueListenableBuilder(
         valueListenable: studentListNotifier,
@@ -35,26 +37,24 @@ class HomeScreen extends StatelessWidget {
             (BuildContext ctx, List<StudentModel> studentList, Widget? child) {
           return ListView.separated(
               itemBuilder: ((ctx, index) {
-                final data = studentList[index];
-                data.key;
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListTile(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
-                    contentPadding: EdgeInsets.all(15),
-                    tileColor: Color.fromARGB(255, 168, 234, 132),
+                    contentPadding: const EdgeInsets.all(15),
+                    tileColor: const Color.fromARGB(255, 168, 234, 132),
                     onTap: () {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => StudentDetails(
-                                  passValue: data, passId: index)));
+                                  passValue: studentListNotifier.value[index],
+                                  passId: index)));
                     },
                     title: Text(
-                      data.name,
+                      studentListNotifier.value[index].name,
                     ),
-                    // subtitle: Text(data.age),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -64,17 +64,20 @@ class HomeScreen extends StatelessWidget {
                               Navigator.of(context)
                                   .push(MaterialPageRoute(builder: (ctx) {
                                 return EditProfile(
-                                  passValueProfile: data,
-                                  index: index,
+                                  imagePath:
+                                      studentListNotifier.value[index].image,
+                                  passValueProfile:
+                                      studentListNotifier.value[index],
                                 );
                               }));
                             }),
-                            icon: Icon(Icons.edit)),
+                            icon: const Icon(Icons.edit)),
                         IconButton(
                             onPressed: ((() {
-                              deleteAlert(context, index);
+                              deleteAlert(
+                                  context, studentListNotifier.value[index]);
                             })),
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.delete,
                               color: Colors.red,
                             )),
@@ -82,12 +85,15 @@ class HomeScreen extends StatelessWidget {
                     ),
                     leading: GestureDetector(
                       onTap: () {
-                        showprofile(context, data);
+                        showprofile(context, studentListNotifier.value[index]);
                       },
                       child: CircleAvatar(
-                        backgroundImage: data.image == 'x'
-                            ? AssetImage('assets/pp3.jpg') as ImageProvider
-                            : FileImage(File(data.image)),
+                        backgroundImage: studentListNotifier
+                                    .value[index].image ==
+                                'x'
+                            ? const AssetImage('assets/pp3.jpg') as ImageProvider
+                            : FileImage(
+                                File(studentListNotifier.value[index].image)),
                         backgroundColor: Colors.green,
                         radius: 33,
                       ),
@@ -96,11 +102,11 @@ class HomeScreen extends StatelessWidget {
                 );
               }),
               separatorBuilder: ((context, index) {
-                return SizedBox(
+                return const SizedBox(
                   height: 0,
                 );
               }),
-              itemCount: studentList.length);
+              itemCount: studentListNotifier.value.length);
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -109,7 +115,7 @@ class HomeScreen extends StatelessWidget {
               .push(MaterialPageRoute(builder: ((ctx) => PersonAdd())));
         }),
         tooltip: "AddStudent",
-        child: Icon(Icons.person_add),
+        child: const Icon(Icons.person_add),
       ),
     );
   }
@@ -126,39 +132,34 @@ class HomeScreen extends StatelessWidget {
                 image: DecorationImage(
                   fit: BoxFit.cover,
                   image: data.image == 'x'
-                      ? AssetImage('assets/pp3.jpg') as ImageProvider
+                      ? const AssetImage('assets/pp3.jpg') as ImageProvider
                       : FileImage(
                           File(data.image),
                         ),
                 ),
               ),
             ),
-            // title: Icon(
-            //   Icons.person,
-            //   size: 250,
-
-            // ),
           );
         }));
   }
 
-  deleteAlert(BuildContext context, index) {
+  deleteAlert(BuildContext context, StudentModel studentModel) {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              content: Text('Are you sure you want to delete'),
+              content: const Text('Are you sure you want to delete'),
               actions: [
                 TextButton(
                     onPressed: () {
-                      deleteStudent(index);
+                      deleteStudent(studentModel);
                       Navigator.of(context).pop(ctx);
                     },
-                    child: Text('Delete', style: TextStyle(color: Colors.red))),
+                    child: const Text('Delete', style: TextStyle(color: Colors.red))),
                 TextButton(
                     onPressed: () {
                       Navigator.of(context).pop(ctx);
                     },
-                    child: Text(
+                    child: const Text(
                       'Cancel',
                       style: TextStyle(color: Colors.black),
                     ))

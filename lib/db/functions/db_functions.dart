@@ -21,8 +21,10 @@ Future<void> getAllStudent() async {
   studentListNotifier.notifyListeners();
 }
 
-Future<void> deleteStudent(int index) async {
+Future<void> deleteStudent(StudentModel studentModel) async {
   final studentDB = await Hive.openBox<StudentModel>('student_db');
-  studentDB.deleteAt(index);
+
+  studentDB.delete(studentModel.key);
+
   getAllStudent();
 }

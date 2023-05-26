@@ -13,7 +13,7 @@ class EditProfile extends StatefulWidget {
       {Key? key, required this.passValueProfile, required this.imagePath})
       : super(key: key);
 
-  StudentModel passValueProfile;
+final  StudentModel passValueProfile;
   String imagePath;
 
   @override

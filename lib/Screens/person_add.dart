@@ -1,9 +1,11 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:project_02/db/functions/db_functions.dart';
 import 'package:project_02/db/model/data_model.dart';
+import 'package:project_02/student_model/student_model_bloc.dart';
 
 class PersonAdd extends StatefulWidget {
   PersonAdd({super.key});
@@ -39,6 +41,8 @@ class _PersonAddState extends State<PersonAdd> {
     );
 
     addStudent(_student);
+        context.read<StudentModelBloc>().add(GetAllStudent());
+
   }
 
   Future<void> takePhoto() async {

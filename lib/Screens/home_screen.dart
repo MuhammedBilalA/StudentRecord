@@ -1,18 +1,21 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:project_02/Screens/editing_screen.dart';
 import 'package:project_02/Screens/person_add.dart';
 import 'package:project_02/Screens/search_screen.dart';
 import 'package:project_02/Screens/student_details.dart';
 import 'package:project_02/db/functions/db_functions.dart';
 import 'package:project_02/db/model/data_model.dart';
+import 'package:project_02/student_model/student_model_bloc.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    context.read<StudentModelBloc>().add(GetAllStudent());
     // getAllStudent();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await getAllStudent();
@@ -23,20 +26,20 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
               onPressed: (() {
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const SearchScreen()));
+                // Navigator.of(context).push(MaterialPageRoute(
+                //     builder: (context) => const SearchScreen()));
               }),
               icon: const Icon(
                 Icons.search,
               ))
         ],
       ),
-      body: ValueListenableBuilder(
-        valueListenable: studentListNotifier,
-        builder:
-            (BuildContext ctx, List<StudentModel> studentList, Widget? child) {
+      body: BlocBuilder<StudentModelBloc, StudentModelState>(
+        builder: (context, state) {
           return ListView.separated(
               itemBuilder: ((ctx, index) {
+                StudentModel student = state.studentList[index];
+
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListTile(
@@ -49,11 +52,10 @@ class HomeScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (context) => StudentDetails(
-                                  passValue: studentListNotifier.value[index],
-                                  passId: index)));
+                                  passValue: student, passId: index)));
                     },
                     title: Text(
-                      studentListNotifier.value[index].name,
+                      student.name,
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -64,18 +66,15 @@ class HomeScreen extends StatelessWidget {
                               Navigator.of(context)
                                   .push(MaterialPageRoute(builder: (ctx) {
                                 return EditProfile(
-                                  imagePath:
-                                      studentListNotifier.value[index].image,
-                                  passValueProfile:
-                                      studentListNotifier.value[index],
+                                  imagePath: student.image,
+                                  passValueProfile: student,
                                 );
                               }));
                             }),
                             icon: const Icon(Icons.edit)),
                         IconButton(
                             onPressed: ((() {
-                              deleteAlert(
-                                  context, studentListNotifier.value[index]);
+                              deleteAlert(context, student);
                             })),
                             icon: const Icon(
                               Icons.delete,
@@ -85,15 +84,13 @@ class HomeScreen extends StatelessWidget {
                     ),
                     leading: GestureDetector(
                       onTap: () {
-                        showprofile(context, studentListNotifier.value[index]);
+                        showprofile(context, student);
                       },
                       child: CircleAvatar(
-                        backgroundImage: studentListNotifier
-                                    .value[index].image ==
-                                'x'
-                            ? const AssetImage('assets/pp3.jpg') as ImageProvider
-                            : FileImage(
-                                File(studentListNotifier.value[index].image)),
+                        backgroundImage: student.image == 'x'
+                            ? const AssetImage('assets/pp3.jpg')
+                                as ImageProvider
+                            : FileImage(File(student.image)),
                         backgroundColor: Colors.green,
                         radius: 33,
                       ),
@@ -106,7 +103,7 @@ class HomeScreen extends StatelessWidget {
                   height: 0,
                 );
               }),
-              itemCount: studentListNotifier.value.length);
+              itemCount: state.studentList.length);
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -154,7 +151,8 @@ class HomeScreen extends StatelessWidget {
                       deleteStudent(studentModel);
                       Navigator.of(context).pop(ctx);
                     },
-                    child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                    child: const Text('Delete',
+                        style: TextStyle(color: Colors.red))),
                 TextButton(
                     onPressed: () {
                       Navigator.of(context).pop(ctx);

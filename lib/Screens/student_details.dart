@@ -5,12 +5,12 @@ import 'package:project_02/Screens/editing_screen.dart';
 import 'package:project_02/db/model/data_model.dart';
 
 class StudentDetails extends StatelessWidget {
-  StudentDetails({
+ const StudentDetails({
     Key? key,
     required this.passValue,
     required this.passId,
   }) : super(key: key);
-  StudentModel passValue;
+ final StudentModel passValue;
   final int passId;
 
   @override

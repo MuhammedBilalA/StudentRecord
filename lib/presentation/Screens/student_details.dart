@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:project_02/Screens/editing_screen.dart';
-import 'package:project_02/db/model/data_model.dart';
+import 'package:project_02/domain/model/data_model.dart';
+import 'package:project_02/presentation/Screens/editing_screen.dart';
 
 class StudentDetails extends StatelessWidget {
  const StudentDetails({

@@ -1,14 +1,17 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_02/Screens/editing_screen.dart';
-import 'package:project_02/Screens/person_add.dart';
-import 'package:project_02/Screens/search_screen.dart';
-import 'package:project_02/Screens/student_details.dart';
-import 'package:project_02/db/functions/db_functions.dart';
-import 'package:project_02/db/model/data_model.dart';
-import 'package:project_02/student_model/student_model_bloc.dart';
+import 'package:project_02/application/student_model_bloc/student_model_bloc.dart';
+import 'package:project_02/domain/model/data_model.dart';
+import 'package:project_02/presentation/Screens/editing_screen.dart';
+import 'package:project_02/presentation/Screens/person_add.dart';
+import 'package:project_02/presentation/Screens/search_screen.dart';
+import 'package:project_02/presentation/Screens/student_details.dart';
+import 'package:project_02/infrastructure/functions/db_functions.dart';
+
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -16,18 +19,14 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.read<StudentModelBloc>().add(GetAllStudent());
-    // getAllStudent();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await getAllStudent();
-    });
     return Scaffold(
       appBar: AppBar(
         title: const Text('Student List'),
         actions: [
           IconButton(
               onPressed: (() {
-                // Navigator.of(context).push(MaterialPageRoute(
-                //     builder: (context) => const SearchScreen()));
+                Navigator.of(context).push(CupertinoPageRoute(
+                    builder: (context) => const SearchScreen()));
               }),
               icon: const Icon(
                 Icons.search,
@@ -36,6 +35,11 @@ class HomeScreen extends StatelessWidget {
       ),
       body: BlocBuilder<StudentModelBloc, StudentModelState>(
         builder: (context, state) {
+          if (state.studentList.isEmpty) {
+            return Center(
+              child: Text('Add StudentList'),
+            );
+          }
           return ListView.separated(
               itemBuilder: ((ctx, index) {
                 StudentModel student = state.studentList[index];
@@ -148,7 +152,7 @@ class HomeScreen extends StatelessWidget {
               actions: [
                 TextButton(
                     onPressed: () {
-                      deleteStudent(studentModel);
+                      deleteStudent(studentModel, context);
                       Navigator.of(context).pop(ctx);
                     },
                     child: const Text('Delete',

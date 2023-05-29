@@ -1,28 +1,27 @@
-
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:project_02/db/functions/db_functions.dart';
-import 'package:project_02/db/model/data_model.dart';
-import 'package:project_02/student_model/student_model_bloc.dart';
+import 'package:project_02/application/student_image_bloc/student_image_bloc.dart';
+import 'package:project_02/domain/model/data_model.dart';
+import 'package:project_02/infrastructure/functions/db_functions.dart';
 
-class PersonAdd extends StatefulWidget {
+class PersonAdd extends StatelessWidget {
   PersonAdd({super.key});
 
-  @override
-  State<PersonAdd> createState() => _PersonAddState();
-}
-
-class _PersonAddState extends State<PersonAdd> {
   final formkey = GlobalKey<FormState>();
+
   final _ageControllor = TextEditingController();
+
   final _nameControllor = TextEditingController();
+
   final _numberControllor = TextEditingController();
+
   final _emailControllor = TextEditingController();
+
   String imagePath = 'x';
 
-  Future<void> onAddStudentButtonClick(BuildContext ctx) async {
+  Future<void> onAddStudentButtonClick(BuildContext ctx, newPath1) async {
     final _name = _nameControllor.text.trim();
     final _age = _ageControllor.text.trim();
     final _num = _numberControllor.text.trim();
@@ -37,23 +36,13 @@ class _PersonAddState extends State<PersonAdd> {
       age: _age,
       phone: _num,
       email: _email,
-      image: imagePath,
+      image: newPath1,
     );
 
-    addStudent(_student);
-        context.read<StudentModelBloc>().add(GetAllStudent());
-
+    addStudent(_student, ctx);
   }
 
-  Future<void> takePhoto() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        imagePath = pickedFile.path;
-      });
-    }
-  }
+  String newPath = 'x';
 
   @override
   Widget build(BuildContext context) {
@@ -71,16 +60,25 @@ class _PersonAddState extends State<PersonAdd> {
               width: double.infinity,
               child: CircleAvatar(
                 radius: 80,
-                child: CircleAvatar(
-                  radius: 80,
-                  backgroundImage: imagePath == 'x'
-                      ? const AssetImage('assets/pp3.jpg') as ImageProvider
-                      : FileImage(File(imagePath)),
-                  child: IconButton(
-                      onPressed: () {
-                        takePhoto();
-                      },
-                      icon: const Icon(Icons.add_a_photo_outlined, size: 50)),
+                child: BlocBuilder<StudentImageBloc, StudentImageState>(
+                  builder: (context, state) {
+                    return CircleAvatar(
+                      radius: 80,
+                      backgroundImage: fun(state.imagePath),
+                      child: IconButton(
+                          onPressed: () {
+                            log(state.imagePath.toString());
+                            context
+                                .read<StudentImageBloc>()
+                                .add(GetImagePath());
+                            newPath = state.imagePath;
+                            log(newPath.toString());
+                          },
+                          icon: state.imagePath == 'x'
+                              ? Icon(Icons.add_a_photo_outlined, size: 50)
+                              : SizedBox()),
+                    );
+                  },
                 ),
               ),
             ),
@@ -212,7 +210,8 @@ class _PersonAddState extends State<PersonAdd> {
                             child: ElevatedButton(
                               onPressed: (() {
                                 if (formkey.currentState!.validate()) {
-                                  onAddStudentButtonClick(context);
+                                  // imagePath = newPath;
+                                  onAddStudentButtonClick(context, newPath);
                                   Navigator.of(context).pop();
                                 } else {}
                               }),
@@ -230,5 +229,13 @@ class _PersonAddState extends State<PersonAdd> {
         ),
       ),
     );
+  }
+
+  fun(String path) {
+    if (path == 'x') {
+      return AssetImage('assets/pp3.jpg');
+    } else {
+      return FileImage(File(path));
+    }
   }
 }

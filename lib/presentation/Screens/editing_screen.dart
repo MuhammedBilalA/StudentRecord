@@ -1,35 +1,36 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:project_02/Screens/home_screen.dart';
-import 'package:project_02/db/functions/db_functions.dart';
-import 'package:project_02/db/model/data_model.dart';
+import 'package:project_02/domain/model/data_model.dart';
+import 'package:project_02/presentation/Screens/home_screen.dart';
 
-class EditProfile extends StatefulWidget {
+
+import '../../application/student_image_bloc/student_image_bloc.dart';
+
+
+
+// ignore: must_be_immutable
+class EditProfile extends StatelessWidget {
   EditProfile(
       {Key? key, required this.passValueProfile, required this.imagePath})
       : super(key: key);
 
-final  StudentModel passValueProfile;
+  final StudentModel passValueProfile;
   String imagePath;
 
-  @override
-  State<EditProfile> createState() => _EditProfileState();
-}
-
-class _EditProfileState extends State<EditProfile> {
   final formkey = GlobalKey<FormState>();
-  late final _ageControllor =
-      TextEditingController(text: widget.passValueProfile.age);
+
+  late final _ageControllor = TextEditingController(text: passValueProfile.age);
+
   late final _nameControllor =
-      TextEditingController(text: widget.passValueProfile.name);
+      TextEditingController(text: passValueProfile.name);
+
   late final _numberControllor =
-      TextEditingController(text: widget.passValueProfile.phone);
+      TextEditingController(text: passValueProfile.phone);
+
   late final _emailControllor =
-      TextEditingController(text: widget.passValueProfile.email);
+      TextEditingController(text: passValueProfile.email);
 
   Future<void> studentAddBTN() async {
     final name = _nameControllor.text.trim();
@@ -40,38 +41,27 @@ class _EditProfileState extends State<EditProfile> {
     if (name.isEmpty || age.isEmpty || num.isEmpty || email.isEmpty) {
       return;
     }
-
     final student = StudentModel(
       name: name,
       age: age,
       phone: num,
       email: email,
-      image: widget.imagePath,
+      image: imagePath,
     );
 
     final studentDB = await Hive.openBox<StudentModel>('student_db');
     int? newKey;
     for (var element in studentDB.values) {
-      if (widget.passValueProfile == element) {
+      if (passValueProfile == element) {
         newKey = element.key;
       }
     }
-    studentDB.put(newKey, student);
 
-    getAllStudent();
+    await studentDB.put(newKey, student);
   }
 
-  Future takePhoto() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      widget.imagePath = pickedFile.path;
-      print(
-          '------------------------------------------------------------------------$widget.imagePath');
-      // widget.passValueProfile.image = widget.imagePath;
-    }
-    setState(() {});
-  }
+  bool update = true;
+  String newpath = 'x';
 
   @override
   Widget build(BuildContext context) {
@@ -89,17 +79,27 @@ class _EditProfileState extends State<EditProfile> {
               width: double.infinity,
               child: CircleAvatar(
                 radius: 80,
-                child: CircleAvatar(
-                  radius: 80,
-                  backgroundImage: (widget.imagePath == 'x')
-                      ? const AssetImage('assets/pp3.jpg')
-                          as ImageProvider<Object>
-                      : FileImage(File(widget.imagePath)),
-                  child: IconButton(
-                      onPressed: () {
-                        takePhoto();
-                      },
-                      icon: const Icon(Icons.add_a_photo_outlined, size: 50)),
+                child: BlocBuilder<StudentImageBloc, StudentImageState>(
+                  builder: (context, state) {
+                    return CircleAvatar(
+                      radius: 80,
+                      backgroundImage: (imagePath == 'x')
+                          ? AssetImage('assets/pp3.jpg')
+                              as ImageProvider<Object>
+                          : update == true
+                              ? FileImage(File(imagePath))
+                              : FileImage(File(state.imagePath)),
+                      child: IconButton(
+                          onPressed: () {
+                            update = false;
+                            context
+                                .read<StudentImageBloc>()
+                                .add(GetImagePath());
+                            newpath = state.imagePath;
+                          },
+                          icon: const Icon(Icons.add_a_photo_outlined, size: 50)),
+                    );
+                  },
                 ),
               ),
             ),
@@ -229,9 +229,10 @@ class _EditProfileState extends State<EditProfile> {
                             height: 40,
                             width: 100,
                             child: ElevatedButton(
-                              onPressed: (() {
+                              onPressed: (() async {
                                 if (formkey.currentState!.validate()) {
-                                  studentAddBTN();
+                                  imagePath = newpath;
+                                  await studentAddBTN();
                                   Navigator.of(context).pushAndRemoveUntil(
                                       MaterialPageRoute(
                                           builder: (ctx) => const HomeScreen()),
@@ -253,5 +254,4 @@ class _EditProfileState extends State<EditProfile> {
       ),
     );
   }
-
 }

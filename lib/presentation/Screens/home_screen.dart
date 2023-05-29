@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
       body: BlocBuilder<StudentModelBloc, StudentModelState>(
         builder: (context, state) {
           if (state.studentList.isEmpty) {
-            return Center(
+            return const Center(
               child: Text('Add StudentList'),
             );
           }

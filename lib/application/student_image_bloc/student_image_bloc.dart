@@ -1,8 +1,6 @@
-import 'dart:developer';
 
-import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'student_image_event.dart';
 part 'student_image_state.dart';
@@ -10,20 +8,21 @@ part 'student_image_state.dart';
 class StudentImageBloc extends Bloc<StudentImageEvent, StudentImageState> {
   StudentImageBloc() : super(StudentImageInitial()) {
     on<GetImagePath>((event, emit) async {
-      try {
-        final pickedFile =
-            await ImagePicker().pickImage(source: ImageSource.gallery);
-        String newPath;
-        if (pickedFile != null) {
-          newPath = pickedFile.path;
-        } else {
-          newPath = 'x';
-        }
+      String newPath = event.imgPath;
+      // try {
+      //   final pickedFile =
+      //       await ImagePicker().pickImage(source: ImageSource.gallery);
+      //   String newPath;
+      //   if (pickedFile != null) {
+      //     newPath = pickedFile.path;
+      //   } else {
+      //     newPath = 'x';
+      //   }
 
-        return emit(StudentImageState(imagePath: newPath));
-      } catch (e) {
-        log(e.toString());
-      }
+      // } catch (e) {
+      //   log(e.toString());
+      // }
+      return emit(StudentImageState(imagePath: newPath));
     });
   }
 }

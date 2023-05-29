@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:project_02/domain/model/data_model.dart';
+import 'package:project_02/infrastructure/functions/db_functions.dart';
 import 'package:project_02/presentation/Screens/home_screen.dart';
 
-
 import '../../application/student_image_bloc/student_image_bloc.dart';
-
-
 
 // ignore: must_be_immutable
 class EditProfile extends StatelessWidget {
@@ -32,7 +30,7 @@ class EditProfile extends StatelessWidget {
   late final _emailControllor =
       TextEditingController(text: passValueProfile.email);
 
-  Future<void> studentAddBTN() async {
+  Future<void> studentAddBTN(BuildContext context, String newpathUpdate) async {
     final name = _nameControllor.text.trim();
     final age = _ageControllor.text.trim();
     final num = _numberControllor.text.trim();
@@ -46,7 +44,7 @@ class EditProfile extends StatelessWidget {
       age: age,
       phone: num,
       email: email,
-      image: imagePath,
+      image: newpathUpdate,
     );
 
     final studentDB = await Hive.openBox<StudentModel>('student_db');
@@ -58,10 +56,12 @@ class EditProfile extends StatelessWidget {
     }
 
     await studentDB.put(newKey, student);
+    context.read<StudentImageBloc>().add(GetImagePath('x'));
   }
 
   bool update = true;
   String newpath = 'x';
+  String Kpath='x';
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +81,8 @@ class EditProfile extends StatelessWidget {
                 radius: 80,
                 child: BlocBuilder<StudentImageBloc, StudentImageState>(
                   builder: (context, state) {
+                    newpath = state.imagePath;
+
                     return CircleAvatar(
                       radius: 80,
                       backgroundImage: (imagePath == 'x')
@@ -90,14 +92,20 @@ class EditProfile extends StatelessWidget {
                               ? FileImage(File(imagePath))
                               : FileImage(File(state.imagePath)),
                       child: IconButton(
-                          onPressed: () {
-                            update = false;
-                            context
-                                .read<StudentImageBloc>()
-                                .add(GetImagePath());
-                            newpath = state.imagePath;
+                          onPressed: () async {
+                            Kpath = await takePhoto(context);
+
+                            if (Kpath != 'x') {
+                              update = false;
+                            }
+
+                            // update = true;
+                            // context
+                            //     .read<StudentImageBloc>()
+                            //     .add(GetImagePath());
                           },
-                          icon: const Icon(Icons.add_a_photo_outlined, size: 50)),
+                          icon:
+                              const Icon(Icons.add_a_photo_outlined, size: 50)),
                     );
                   },
                 ),
@@ -231,8 +239,17 @@ class EditProfile extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: (() async {
                                 if (formkey.currentState!.validate()) {
-                                  imagePath = newpath;
-                                  await studentAddBTN();
+                                  // imagePath = newpath;
+                                  if(Kpath!='x'){
+                                  await studentAddBTN(context, newpath);
+
+
+                                  }else{
+                                  await studentAddBTN(context, imagePath);
+
+                                    
+                                  }
+
                                   Navigator.of(context).pushAndRemoveUntil(
                                       MaterialPageRoute(
                                           builder: (ctx) => const HomeScreen()),

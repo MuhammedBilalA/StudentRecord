@@ -6,6 +6,7 @@ import 'package:project_02/application/student_image_bloc/student_image_bloc.dar
 import 'package:project_02/domain/model/data_model.dart';
 import 'package:project_02/infrastructure/functions/db_functions.dart';
 
+// ignore: must_be_immutable
 class PersonAdd extends StatelessWidget {
   PersonAdd({super.key});
 
@@ -40,6 +41,7 @@ class PersonAdd extends StatelessWidget {
     );
 
     addStudent(_student, ctx);
+    ctx.read<StudentImageBloc>().add(GetImagePath('x'));
   }
 
   String newPath = 'x';
@@ -62,17 +64,15 @@ class PersonAdd extends StatelessWidget {
                 radius: 80,
                 child: BlocBuilder<StudentImageBloc, StudentImageState>(
                   builder: (context, state) {
+                    newPath = state.imagePath;
                     return CircleAvatar(
                       radius: 80,
                       backgroundImage: fun(state.imagePath),
                       child: IconButton(
-                          onPressed: () {
-                            log(state.imagePath.toString());
-                            context
-                                .read<StudentImageBloc>()
-                                .add(GetImagePath());
-                            newPath = state.imagePath;
-                            log(newPath.toString());
+                          onPressed: () async {
+                            log('-----BEFORE  ${state.imagePath}');
+                            await takePhoto(context);
+                            log('-----AFTER  ${newPath}');
                           },
                           icon: state.imagePath == 'x'
                               ? Icon(Icons.add_a_photo_outlined, size: 50)
